@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEIC Speaking 실전 모의테스트</title>
+<style>
+  :root{
+    --navy:#0b2545; --navy2:#13315c; --blue:#1b6ca8; --blue2:#2a9df4;
+    --bg:#eef2f7; --panel:#ffffff; --line:#d8e0ea; --text:#1c2733; --muted:#62707f;
+    --green:#1e9e6a; --amber:#e0930a; --red:#d2403a; --gold:#caa53d;
+    --shadow:0 8px 28px rgba(13,38,76,.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .app{max-width:980px;margin:0 auto;min-height:100vh;background:var(--panel);box-shadow:var(--shadow);position:relative}
+  /* ===== Top test bar (실전 화면 상단바) ===== */
+  .testbar{background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:space-between;
+    padding:12px 20px;position:sticky;top:0;z-index:30}
+  .testbar .brand{font-weight:700;letter-spacing:.5px;font-size:15px}
+  .testbar .brand small{font-weight:400;opacity:.8;margin-left:6px}
+  .testbar .qmeta{font-size:13px;opacity:.9}
+  .testbar .clockbox{display:flex;align-items:center;gap:14px}
+  .vol{font-size:18px;opacity:.85;cursor:pointer}
+  .clock{background:rgba(255,255,255,.12);padding:5px 12px;border-radius:8px;font-variant-numeric:tabular-nums;
+    font-size:14px;font-weight:600}
+  /* ===== progress strip ===== */
+  .progress{display:flex;gap:3px;padding:10px 20px;background:#f4f7fb;border-bottom:1px solid var(--line)}
+  .progress .seg{flex:1;height:6px;border-radius:4px;background:#dde5ef}
+  .progress .seg.done{background:var(--blue2)}
+  .progress .seg.cur{background:var(--navy)}
+  /* ===== content ===== */
+  .stage{padding:30px 34px 40px}
+  .pill{display:inline-block;background:#e8f1fb;color:var(--blue);font-size:12px;font-weight:700;
+    padding:4px 12px;border-radius:30px;letter-spacing:.4px}
+  h1.title{font-size:26px;color:var(--navy);margin:14px 0 6px}
+  h2.qtitle{font-size:21px;color:var(--navy);margin:8px 0 4px}
+  .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .directions{background:#f7faff;border:1px solid var(--line);border-left:4px solid var(--blue2);
+    border-radius:10px;padding:16px 18px;margin:16px 0;font-size:15px}
+  .directions .ko{color:var(--muted);font-size:13.5px;margin-top:8px}
+  .prompt-card{background:#fbfcfe;border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin:18px 0;
+    font-size:19px;line-height:1.85}
+  .prompt-card.reading{font-size:20px;letter-spacing:.1px}
+  .qbox{background:var(--navy);color:#fff;border-radius:12px;padding:18px 22px;margin:16px 0;font-size:18px}
+  .qbox .qlabel{font-size:12px;opacity:.7;letter-spacing:1px;display:block;margin-bottom:4px}
+  .infotable{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:15px}
+  .infotable caption{caption-side:top;text-align:left;font-weight:700;color:var(--navy);font-size:17px;margin-bottom:10px}
+  .infotable th,.infotable td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+  .infotable th{background:#eef3fa;color:var(--navy);font-weight:600;width:34%}
+  .infotable .sec{background:#13315c;color:#fff;font-weight:700;text-align:center}
+  .scene{width:100%;max-width:560px;display:block;margin:6px auto;border-radius:12px;border:1px solid var(--line)}
+  .picwrap{position:relative;max-width:560px;margin:6px auto;text-align:center}
+  .scene.photo{height:auto;aspect-ratio:43/27;object-fit:cover;background:#eef3fa}
+  .picloading{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+  /* ===== status / phase indicator ===== */
+  .phase{display:flex;align-items:center;gap:12px;margin:22px 0 8px}
+  .phase .dot{width:13px;height:13px;border-radius:50%;background:#c7d2e0}
+  .phase .dot.prep{background:var(--amber);box-shadow:0 0 0 5px rgba(224,147,10,.18)}
+  .phase .dot.rec{background:var(--red);animation:pulse 1s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(210,64,58,.5)}70%{box-shadow:0 0 0 12px rgba(210,64,58,0)}100%{box-shadow:0 0 0 0 rgba(210,64,58,0)}}
+  .phase .ptext{font-weight:700;font-size:16px}
+  .phase .ptext .small{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+  .bigtimer{font-size:46px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;letter-spacing:1px}
+  .bigtimer.warn{color:var(--red)}
+  .bar{height:10px;border-radius:6px;background:#e3eaf3;overflow:hidden;margin:10px 0 4px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--blue2));width:100%;transition:width .25s linear}
+  .bar.rec > i{background:linear-gradient(90deg,#e85b55,var(--red))}
+  /* live transcript */
+  .live{background:#fffdf5;border:1px dashed #e6d9a8;border-radius:10px;padding:14px 16px;margin:16px 0;
+    min-height:60px;font-size:15px;color:#5a4a16}
+  .live .lab{font-size:12px;font-weight:700;color:#a9851c;letter-spacing:.5px;display:block;margin-bottom:6px}
+  .asrtag{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 9px;border-radius:20px;margin-left:6px}
+  .asrtag.ok{background:#e7f6ee;color:#136a47}
+  .asrtag.warn{background:#fdeceb;color:#9c2b27}
+  /* ===== buttons ===== */
+  .btnrow{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+  .btn{border:none;border-radius:10px;padding:13px 26px;font-size:15px;font-weight:700;cursor:pointer;
+    transition:.15s;font-family:inherit}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn.primary{background:var(--navy);color:#fff}
+  .btn.primary:hover:not(:disabled){background:var(--navy2)}
+  .btn.accent{background:var(--blue2);color:#fff}
+  .btn.accent:hover:not(:disabled){background:var(--blue)}
+  .btn.ghost{background:#eef2f7;color:var(--navy)}
+  .btn.ghost:hover:not(:disabled){background:#e1e8f1}
+  .btn.danger{background:var(--red);color:#fff}
+  .btn.big{padding:16px 40px;font-size:17px}
+  /* ===== home / setup ===== */
+  .hero{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:46px 40px 40px;text-align:center}
+  .hero h1{font-size:32px;margin-bottom:8px}
+  .hero p{opacity:.92;font-size:15px;max-width:620px;margin:0 auto}
+  .hero .logo{font-size:13px;letter-spacing:3px;opacity:.8;margin-bottom:14px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:26px 0}
+  .infocard{background:#f7faff;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center}
+  .infocard .n{font-size:24px;font-weight:800;color:var(--navy)}
+  .infocard .l{font-size:12.5px;color:var(--muted);margin-top:3px}
+  .checklist{background:#fbfcfe;border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:18px 0}
+  .checklist h3{font-size:15px;color:var(--navy);margin-bottom:10px}
+  .checklist .item{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:7px 0;color:#33414f}
+  .checklist .item b{color:var(--navy)}
+  .testgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px}
+  .testbtn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:12px 8px;cursor:pointer;
+    text-align:center;transition:.12s;font-family:inherit}
+  .testbtn:hover{border-color:var(--blue2);background:#f3f9ff}
+  .testbtn.sel{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:0 6px 16px rgba(11,37,69,.25)}
+  .testbtn .tn{font-size:17px;font-weight:800;color:var(--navy)}
+  .testbtn.sel .tn{color:#fff}
+  .testbtn .tl{font-size:11px;color:var(--muted);margin-top:2px}
+  .testbtn.sel .tl{color:rgba(255,255,255,.75)}
+  .micstatus{font-size:14px;padding:10px 14px;border-radius:8px;margin:12px 0}
+  .micstatus.ok{background:#e7f6ee;color:#136a47}
+  .micstatus.no{background:#fdeceb;color:#9c2b27}
+  .micstatus.wait{background:#fff6e6;color:#8a5d09}
+  /* ===== results ===== */
+  .scorehead{background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:36px;text-align:center}
+  .scorehead .lvl{font-size:14px;letter-spacing:2px;opacity:.85}
+  .scorehead .num{font-size:64px;font-weight:800;line-height:1.05;margin:4px 0}
+  .scorehead .grade{display:inline-block;background:rgba(255,255,255,.16);padding:6px 20px;border-radius:30px;
+    font-size:16px;font-weight:700;margin-top:6px}
+  .scorehead .desc{opacity:.92;font-size:14px;max-width:640px;margin:14px auto 0}
+  .gauge{display:flex;justify-content:center;gap:5px;margin:18px 0 4px}
+  .gauge .g{width:34px;height:8px;border-radius:4px;background:rgba(255,255,255,.25)}
+  .gauge .g.on{background:#ffd966}
+  .resblock{border:1px solid var(--line);border-radius:14px;margin:18px 0;overflow:hidden}
+  .resblock .rhead{background:#f4f7fb;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;
+    cursor:pointer;border-bottom:1px solid var(--line)}
+  .resblock .rhead .lft{font-weight:700;color:var(--navy);font-size:15px}
+  .resblock .rhead .lft small{display:block;color:var(--muted);font-weight:400;font-size:12.5px;margin-top:2px}
+  .resblock .rhead .sc{font-size:15px;font-weight:800}
+  .resbody{padding:18px}
+  .resbody.collapsed{display:none}
+  .metricrow{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+  .chip{background:#eef3fa;border-radius:20px;padding:5px 12px;font-size:12.5px;color:var(--navy)}
+  .chip b{color:var(--blue)}
+  .tlabel{font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--muted);margin:14px 0 5px;text-transform:uppercase}
+  .transcript{background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:13px 15px;font-size:14.5px;
+    white-space:pre-wrap}
+  .transcript.target{background:#f3f8ff}
+  .feedback{font-size:14.5px}
+  .feedback ul{margin:4px 0 0 18px}
+  .feedback li{margin:5px 0}
+  .feedback .good{color:var(--green)}
+  .feedback .fix{color:var(--red)}
+  .audio-wrap{margin:10px 0}
+  audio{width:100%;margin-top:6px}
+  .scorepill{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;color:#fff}
+  details.study{border:1px solid var(--line);border-radius:12px;padding:4px 18px;margin:14px 0;background:#fbfcfe}
+  details.study summary{font-weight:700;color:var(--navy);cursor:pointer;padding:12px 0;font-size:15px}
+  details.study .scont{padding:0 0 16px;font-size:14.5px}
+  details.study h4{color:var(--blue);margin:12px 0 4px;font-size:14.5px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .center{text-align:center}
+  .hide{display:none!important}
+  /* ===== ETS-style score report ===== */
+  .reportcard{border:2px solid var(--navy);border-radius:14px;overflow:hidden;margin:6px 0 22px;background:#fff}
+  .rc-head{background:var(--navy);color:#fff;padding:13px 18px;font-weight:700;font-size:15px}
+  .rc-head span{font-weight:400;opacity:.8;font-size:12px}
+  .rc-grid{display:grid;grid-template-columns:repeat(3,1fr)}
+  .rc-cell{padding:16px 12px;text-align:center;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .rc-cell:last-child{border-right:none}
+  .rc-k{font-size:12px;color:var(--muted);letter-spacing:.3px}
+  .rc-v{font-size:30px;font-weight:800;color:var(--navy);line-height:1.1;margin-top:2px}
+  .rc-v small{font-size:14px;color:var(--muted);font-weight:600}
+  .rc-desc{padding:14px 18px;font-size:14px;border-bottom:1px solid var(--line);background:#fbfcfe}
+  .rc-sub{padding:14px 18px}
+  .rc-subt{font-size:12.5px;font-weight:700;color:var(--navy);margin-bottom:10px}
+  .rc-subrow{display:flex;align-items:center;gap:12px;margin:9px 0;font-size:14px;flex-wrap:wrap}
+  .rc-subrow span{flex:1;min-width:140px}
+  .lvlbar{display:inline-flex;gap:3px}
+  .lvlbar i{width:26px;height:9px;border-radius:3px;background:#e0e7f0;display:block}
+  .lvlbar i.on{background:var(--blue2)}
+  .rt-hi{color:var(--green)} .rt-mid{color:var(--amber)} .rt-lo{color:var(--red)}
+  .rc-subrow b{min-width:84px;text-align:right}
+  .rc-note{padding:0 18px 14px;font-size:11.5px;color:var(--muted)}
+  /* dimension ratings per question */
+  .dimbox{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .dimrow{display:grid;grid-template-columns:160px 84px 1fr;gap:8px;align-items:center;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .dimrow:last-child{border-bottom:none}
+  .dimrow .dn{font-weight:700;color:var(--navy)}
+  .dimrow b{font-weight:800}
+  .dimrow .dnote{color:var(--muted);font-size:12.5px}
+  .tredit{width:100%;min-height:74px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:14px;
+    font-family:inherit;resize:vertical;background:#fffdf5}
+  /* ===== mobile / iPhone ===== */
+  @media(max-width:600px){
+    .stage{padding:20px 15px 30px}
+    .testbar{padding:10px 14px}.testbar .qmeta{font-size:11.5px;max-width:48%;text-align:right}
+    .hero{padding:30px 18px}.hero h1{font-size:23px}
+    .bigtimer{font-size:40px}.scorehead .num{font-size:48px}
+    .btn{padding:13px 18px}.btn.big{width:100%}
+    .btnrow{gap:10px}.btnrow .btn{flex:1 1 auto}
+    .rc-grid{grid-template-columns:1fr 1fr}.rc-cell:nth-child(3){grid-column:span 2;border-right:none}
+    .rc-v{font-size:26px}
+    .dimrow{grid-template-columns:1fr auto;row-gap:3px}.dimrow .dnote{grid-column:1/-1}
+    .infotable th,.infotable td{padding:7px 8px;font-size:13.5px}
+    .prompt-card,.prompt-card.reading{font-size:17px;padding:18px}
+  }
+  @media(max-width:600px){ .testbar .brand small{display:none} }
+  @media(max-width:600px){
+    .stage{padding:22px 18px 34px}.hero{padding:34px 22px}.hero h1{font-size:25px}
+    .bigtimer{font-size:38px}.scorehead .num{font-size:50px}.infotable th{width:40%}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="testbar" id="testbar">
+    <div class="brand">TOEIC<small>Speaking</small></div>
+    <div class="qmeta" id="qmeta">실전 모의테스트</div>
+    <div class="clockbox">
+      <span class="vol" id="volBtn" title="디렉션 다시 듣기">🔊</span>
+      <span class="clock" id="globalClock">20:00</span>
+    </div>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <!-- ============ HOME ============ -->
+  <section id="screen-home">
+    <div class="hero">
+      <div class="logo">E T S · S T Y L E · M O C K · T E S T</div>
+      <h1>TOEIC Speaking 실전 모의테스트</h1>
+      <p>실제 시험과 동일한 11문제·타이머·화면 흐름으로 연습하고, 녹음한 답변을 음성인식으로 전사해 토익 채점기준에 맞춰 자동 평가받습니다.</p>
+    </div>
+    <div class="stage">
+      <div class="cards">
+        <div class="infocard"><div class="n">11</div><div class="l">총 문항</div></div>
+        <div class="infocard"><div class="n">5</div><div class="l">파트 (Part 1–5)</div></div>
+        <div class="infocard"><div class="n">~20분</div><div class="l">소요 시간</div></div>
+        <div class="infocard"><div class="n">0–200</div><div class="l">점수 · Lv.1–8</div></div>
+      </div>
+
+      <div class="checklist">
+        <h3>① 모의테스트 선택</h3>
+        <p class="note" style="margin-bottom:12px">원하는 회차를 선택하세요. 각 회차는 <b>고정 세트</b>로, 같은 번호는 항상 같은 11문제가 출제됩니다.</p>
+        <div class="testgrid" id="testGrid"></div>
+        <p class="note" id="testPick">선택된 회차: <b>TEST 01</b></p>
+      </div>
+
+      <div class="checklist">
+        <h3>시험 구성 (실제 ETS / 한국 시험 기준)</h3>
+        <div class="item"><b>Part 1 · Q1–2</b>　지문 읽기 (Read a text aloud) — 준비 45초 / 답변 45초 · 0–3점</div>
+        <div class="item"><b>Part 2 · Q3–4</b>　사진 묘사 (Describe a picture) — 준비 45초 / 답변 30초 · 0–3점</div>
+        <div class="item"><b>Part 3 · Q5–7</b>　듣고 질문에 답하기 (Respond to questions) — 준비 3초 / 답변 15·15·30초 · 0–3점</div>
+        <div class="item"><b>Part 4 · Q8–10</b>　표 기반 응답 (Use information provided) — 정보읽기 45초 / 답변 15·15·30초 · 0–3점</div>
+        <div class="item"><b>Part 5 · Q11</b>　의견 제시 (Express an opinion) — 준비 45초 / 답변 60초 · 0–5점</div>
+      </div>
+
+      <div class="checklist">
+        <h3>시작 전 확인</h3>
+        <div class="item">🎧 <span>조용한 환경에서 <b>이어폰/마이크</b>를 준비하세요. 디렉션·질문은 음성(TTS)으로 재생됩니다.</span></div>
+        <div class="item">🌐 <span>음성인식·음성재생을 위해 <b>Google Chrome</b> 및 인터넷 연결을 권장합니다.</span></div>
+        <div class="item">🎙️ <span>아래에서 <b>마이크 권한</b>을 먼저 허용하세요. 각 문항은 시간이 끝나면 자동으로 다음으로 넘어갑니다.</span></div>
+      </div>
+
+      <div class="micstatus wait" id="micStatus">마이크 권한 상태: 확인 전</div>
+
+      <div class="checklist">
+        <h3>🔊 음성(읽어주기) 설정</h3>
+        <p class="note" style="margin-bottom:10px">디렉션·질문을 읽어주는 목소리입니다. ⭐ 표시가 가장 자연스러운(사람에 가까운) 음성입니다.</p>
+        <select id="voiceSel" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text)">
+          <option>영어 음성을 찾는 중…</option>
+        </select>
+        <div class="btnrow" style="margin-top:12px">
+          <button class="btn ghost" id="btnVoiceTest">▶ 선택한 음성 미리듣기</button>
+        </div>
+        <p class="note" id="voiceHint"></p>
+      </div>
+
+      <div class="checklist">
+        <h3>🎯 음성인식(채점) 방식 선택</h3>
+        <p class="note" style="margin-bottom:10px">녹음한 답변을 텍스트로 바꿔 채점합니다. 기본값은 <b>온디바이스 AI</b>로, 내 음성이 외부로 나가지 않습니다.</p>
+        <select id="asrEngine" style="width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;color:var(--text)">
+          <option value="device" selected>① 온디바이스 AI 인식 (권장 · 비공개) — 녹음을 브라우저 안에서 직접 전사</option>
+          <option value="live">② 실시간 인식 (빠름) — 말하는 중 자동 전사 (브라우저 제공사 서버 사용 가능, iPhone 미지원)</option>
+          <option value="manual">③ 자동 인식 끔 — 시험 후 결과 화면에서 답변을 직접 입력해 채점</option>
+        </select>
+        <p class="note" id="asrHint" style="margin-top:8px"></p>
+        <div class="item" style="margin-top:6px">🛡️ <span><b>프라이버시:</b> 녹음·답변·점수는 이 브라우저 안에서만 처리되며, 외부 전송이나 AI 학습에 사용되지 않습니다. ‘온디바이스 AI’는 최초 1회 인식 모델(약 40MB)을 내려받습니다(인터넷 필요).</span></div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn accent" id="btnMic">🎙️ 마이크 권한 미리 허용 (선택)</button>
+        <button class="btn primary big" id="btnStart">실전 모의테스트 시작 ▶</button>
+      </div>
+      <p class="note" id="startHint">시작을 누르면 <b>마이크 권한을 한 번만</b> 요청하며, 이후 모든 문제에서 다시 묻지 않고 계속 사용됩니다.</p>
+      <p class="note">※ 본 앱은 ETS 공식 시험이 아니며, 점수는 학습용 추정치입니다. 모든 처리는 브라우저 내에서만 이루어지며 녹음은 외부로 전송되지 않습니다.</p>
+    </div>
+  </section>
+
+  <!-- ============ DIRECTION ============ -->
+  <section id="screen-direction" class="hide">
+    <div class="stage">
+      <span class="pill" id="dirPill">PART</span>
+      <h1 class="title" id="dirTitle"></h1>
+      <div class="directions" id="dirText"></div>
+      <div class="phase"><span class="dot"></span><span class="ptext" id="dirCue">디렉션을 읽어드립니다…</span></div>
+      <div class="btnrow">
+        <button class="btn primary big" id="btnDirNext">다음 ▶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUESTION ============ -->
+  <section id="screen-question" class="hide">
+    <div class="stage">
+      <span class="pill" id="qPill">PART 1 · Question 1 of 11</span>
+      <h2 class="qtitle" id="qTitle"></h2>
+      <div id="qContent"></div>
+
+      <div class="phase">
+        <span class="dot" id="phaseDot"></span>
+        <span class="ptext" id="phaseText">준비 중<span class="small" id="phaseSmall"></span></span>
+      </div>
+      <div class="bigtimer" id="bigTimer">00</div>
+      <div class="bar" id="progBar"><i id="progFill"></i></div>
+
+      <div class="live hide" id="liveBox">
+        <span class="lab">🎙️ 실시간 인식 (LIVE TRANSCRIPT)</span>
+        <span id="liveText"></span>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn ghost" id="btnSkip" title="이 문제를 통째로 건너뛰고 다음 문제로 이동합니다">⏭ 이 문제 건너뛰기</button>
+        <button class="btn danger hide" id="btnStopRec" title="답변을 마치고 다음으로 진행합니다">⏹ 답변 종료 후 다음</button>
+      </div>
+      <p class="note" id="qNote"></p>
+    </div>
+  </section>
+
+  <!-- ============ SCORING (loading) ============ -->
+  <section id="screen-scoring" class="hide">
+    <div class="stage center" style="padding:80px 34px">
+      <div class="bigtimer" style="font-size:30px">채점 중…</div>
+      <p class="sub" id="scoringMsg">녹음된 답변을 전사하고 토익 채점기준에 맞춰 분석하고 있습니다.</p>
+      <div class="bar"><i id="scoreFill" style="width:0%"></i></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="screen-result" class="hide">
+    <div class="scorehead">
+      <div class="lvl">TOTAL SCORE</div>
+      <div class="num" id="resScore">0</div>
+      <div class="grade" id="resLevel">Level –</div>
+      <div class="gauge" id="resGauge"></div>
+      <div class="desc" id="resDesc"></div>
+    </div>
+    <div class="stage">
+      <h2 class="qtitle">문항별 평가</h2>
+      <p class="sub">각 카드를 눌러 답변 전사·녹음·상세 피드백을 확인하세요.</p>
+      <div id="resList"></div>
+
+      <details class="study" id="studyBox" open>
+        <summary>📚 종합 학습 가이드 · 연습법 · 공부 방법</summary>
+        <div class="scont" id="studyContent"></div>
+      </details>
+
+      <div class="btnrow center" style="justify-content:center">
+        <button class="btn ghost" id="btnRetry">🔄 새 문제로 다시 풀기</button>
+        <button class="btn primary" id="btnHome">처음 화면으로</button>
+      </div>
+      <p class="note center">※ 점수는 음성인식 전사 기반 추정치입니다. 발음·억양 등 음성 품질은 직접 녹음을 들으며 보완하세요.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- On-device speech-to-text (Whisper via transformers.js). Runs fully in the browser;
+     the recorded audio is never uploaded. Exposes window.ASR for the main script. -->
+<script type="module">
+  let transcriber=null, loadingPromise=null;
+  const CDN="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2";
+  async function ensureLib(){
+    if(window.__xenova)return window.__xenova;
+    const mod=await import(CDN+"/dist/transformers.min.js");
+    mod.env.allowLocalModels=false;
+    mod.env.useBrowserCache=true;            // cache model so it downloads only once
+    window.__xenova=mod; return mod;
+  }
+  async function load(onProgress){
+    if(transcriber)return transcriber;
+    if(!loadingPromise){
+      loadingPromise=(async()=>{
+        const { pipeline }=await ensureLib();
+        return await pipeline("automatic-speech-recognition","Xenova/whisper-tiny.en",{
+          progress_callback:(p)=>{ if(onProgress&&p&&p.status==="progress"&&p.total){ onProgress(p.loaded/p.total); } }
+        });
+      })();
+    }
+    transcriber=await loadingPromise; return transcriber;
+  }
+  // decode recorded blob -> mono Float32 PCM @ 16 kHz (Whisper input format)
+  async function decode16k(blob){
+    const buf=await blob.arrayBuffer();
+    const AC=window.AudioContext||window.webkitAudioContext;
+    const ctx=new AC();
+    const audio=await ctx.decodeAudioData(buf);
+    let data=audio.getChannelData(0); const sr=audio.sampleRate;
+    if(sr!==16000){
+      const ratio=sr/16000, len=Math.max(1,Math.round(data.length/ratio)), out=new Float32Array(len);
+      for(let i=0;i<len;i++){ const x=i*ratio, i0=Math.floor(x), i1=Math.min(i0+1,data.length-1), f=x-i0; out[i]=data[i0]*(1-f)+data[i1]*f; }
+      data=out;
+    }
+    try{ctx.close();}catch(_){}
+    return data;
+  }
+  async function transcribe(blob){
+    const t=await load();
+    const audio=await decode16k(blob);
+    const out=await t(audio,{chunk_length_s:30, stride_length_s:5});
+    return (out && (out.text||"")).trim();
+  }
+  window.ASR={ supported: !!(window.AudioContext||window.webkitAudioContext), load, transcribe, isLoaded:()=>!!transcriber };
+</script>
+
+<script>
+/* ============================================================
+   TOEIC Speaking Mock Test  —  single-file app
+   ============================================================ */
+
+/* ---------- 0. QUESTION BANK ---------- */
+const BANK = {
+  // Part 1: read a text aloud (announcements, ads, voicemails, tours, news)
+  reading: [
+    "Welcome to today's grand opening of Riverside Mall. We are pleased to offer special discounts on clothing, electronics, and home goods throughout the weekend. Our friendly staff are ready to assist you, so please don't hesitate to ask any questions. We hope you enjoy your shopping experience and visit us again soon.",
+    "Thank you for calling Sunrise Dental Clinic. Our office is currently closed. Our regular hours are Monday through Friday, from nine in the morning until six in the evening. If this is an emergency, please call our after-hours line. Otherwise, leave your name, number, and a brief message, and we will return your call as soon as possible.",
+    "Attention passengers, the train to Central Station will be delayed by approximately fifteen minutes due to a signal problem. We sincerely apologize for the inconvenience this may cause. Please remain on the platform and listen for further announcements. Thank you for your patience and understanding during this short delay.",
+    "Are you tired of slow internet at home? Switch to FiberMax today and enjoy lightning-fast speeds at an affordable price. With our new premium plan, you can stream movies, play games, and work from home without interruption. Call now to learn about our limited-time offer and get free installation this month.",
+    "Good evening, and welcome to the National Art Museum. Tonight's special exhibition features paintings from the early twentieth century. Please remember that photography is not permitted inside the galleries. Guided tours begin every thirty minutes near the main entrance. We hope you have a wonderful and inspiring evening with us.",
+    "This is a reminder that the company picnic will be held next Saturday at Greenfield Park. Lunch and beverages will be provided, and there will be games for employees and their families. Please arrive by eleven o'clock and remember to wear comfortable clothing. We look forward to seeing everyone there for a fun afternoon.",
+    "Thank you for shopping at FreshMart, your neighborhood grocery store. This week, all fresh fruits and vegetables are twenty percent off. Don't forget to pick up a free recipe card near the entrance. Our bakery is now open until nine in the evening, offering freshly baked bread and pastries every day.",
+    "In local news, the city council has approved a new plan to expand the public library. The renovation will add a children's reading room, additional study spaces, and a modern computer lab. Construction is expected to begin this fall and finish by next summer. Residents are invited to share their feedback at the upcoming meeting."
+  ],
+
+  // Part 2: describe a picture — each has an SVG scene + key elements (for scoring hints)
+  // img = fixed real photo (Unsplash CDN, deterministic), pcs = deterministic Picsum fallback id, id = offline SVG fallback
+  pictures: [
+    { id:"office",     img:"https://images.unsplash.com/photo-1522071820081-009f0129c71c", pcs:1062, caption:"An office meeting", key:["people","table","sitting","laptop","meeting","wearing","talking","office","room"] },
+    { id:"park",       img:"https://images.unsplash.com/photo-1519331379826-f10be5486c6f", pcs:1018, caption:"A park on a sunny day", key:["people","tree","bench","walking","grass","sky","path","sitting","outside"] },
+    { id:"cafe",       img:"https://images.unsplash.com/photo-1554118811-1e0d58224f24", pcs:225,  caption:"A coffee shop", key:["counter","cup","coffee","table","menu","customer","chair","window","sitting"] },
+    { id:"street",     img:"https://images.unsplash.com/photo-1502920917128-1aa500764cbd", pcs:164,  caption:"A busy city street", key:["building","car","street","people","walking","crossing","traffic","sign","road"] },
+    { id:"market",     img:"https://images.unsplash.com/photo-1488459716781-31db52582fe9", pcs:292,  caption:"An outdoor market", key:["fruit","stall","buying","seller","basket","standing","vegetables","people","food"] },
+    { id:"classroom",  img:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b", pcs:24,   caption:"A classroom", key:["students","teacher","board","desk","writing","sitting","book","room","chair"] },
+    { id:"restaurant", img:"https://images.unsplash.com/photo-1517248135467-4c7edcad34c4", pcs:431,  caption:"A restaurant", key:["table","people","eating","waiter","menu","food","sitting","dining","chair"] },
+    { id:"library",    img:"https://images.unsplash.com/photo-1521587760476-6c12a4b040da", pcs:24,   caption:"A library", key:["books","shelves","reading","desk","people","sitting","studying","room","table"] }
+  ],
+
+  // Part 3: respond to questions — scenario + 3 questions (q3 longer)
+  respond: [
+    { topic:"television and movies",
+      scenario:"Imagine that a marketing firm is doing research in your area. You have agreed to answer questions about watching television and movies.",
+      q:["How often do you watch movies, and where do you usually watch them?",
+         "Who do you usually watch movies with, and why?",
+         "What kind of movies do you enjoy the most, and explain why you like them."] },
+    { topic:"shopping habits",
+      scenario:"Imagine that a friend is asking for your opinion. You have agreed to talk about shopping.",
+      q:["How often do you go shopping for clothes?",
+         "Do you prefer shopping online or in stores? Why?",
+         "Describe the last time you bought something you really wanted, and explain why you chose it."] },
+    { topic:"restaurants and food",
+      scenario:"Imagine that a magazine is doing research. You have agreed to answer questions about eating out.",
+      q:["What is your favorite restaurant in your neighborhood?",
+         "How often do you eat at restaurants instead of cooking at home?",
+         "Describe a memorable meal you had recently and explain what made it special."] },
+    { topic:"exercise and health",
+      scenario:"Imagine that a fitness company is doing a survey. You have agreed to answer questions about exercise.",
+      q:["What kind of exercise do you do, and how often?",
+         "Do you prefer exercising alone or with others? Why?",
+         "Describe how exercise affects your daily life and explain why it is important to you."] },
+    { topic:"travel and vacations",
+      scenario:"Imagine that a travel agency is doing market research. You have agreed to answer questions about travel.",
+      q:["Where did you go on your last vacation?",
+         "Do you prefer traveling to cities or to the countryside? Why?",
+         "Describe your ideal vacation and explain why it appeals to you."] },
+    { topic:"music",
+      scenario:"Imagine that a radio station is doing research. You have agreed to answer questions about music.",
+      q:["What kind of music do you listen to most often?",
+         "When and where do you usually listen to music?",
+         "Describe a concert or musical event you attended and explain how you felt about it."] }
+  ],
+
+  // Part 4: respond using information provided — table + 3 questions
+  infoTasks: [
+    {
+      title:"Conference Schedule — Global Marketing Summit",
+      intro:"You have 45 seconds to read the schedule. Then a caller will ask you questions about it.",
+      table:[
+        ["sec","Friday, October 18 · Main Hall",""],
+        ["9:00 AM","Registration & Coffee","Lobby"],
+        ["10:00 AM","Keynote: Digital Trends","Ms. Karen Lee"],
+        ["11:30 AM","Workshop: Social Media","Room A"],
+        ["12:30 PM","Lunch Break","Cafeteria"],
+        ["2:00 PM","Panel: Brand Strategy","Room B"],
+        ["4:00 PM","Networking Session","Lounge"]
+      ],
+      q:["When does the conference start, and where is the registration?",
+         "I heard the keynote is in the afternoon. Is that correct?",
+         "I'm interested in social media. Can you tell me all the details about that session?"]
+    },
+    {
+      title:"Interview Schedule — Marketing Assistant Position",
+      intro:"You have 45 seconds to read the interview schedule. Then the candidate will ask you questions.",
+      table:[
+        ["sec","Tuesday, March 5 · Interviews",""],
+        ["9:30 AM","Mr. James Park","HR Office"],
+        ["10:15 AM","Ms. Anna Cho","HR Office"],
+        ["11:00 AM","Written Test","Room 204"],
+        ["1:00 PM","Mr. David Kim","Manager's Office"],
+        ["2:00 PM","Group Discussion","Conference Room"]
+      ],
+      q:["What time is the first interview, and who is it with?",
+         "I think there is a written test in the morning. Is that right?",
+         "Could you tell me everything scheduled for the afternoon?"]
+    },
+    {
+      title:"Tour Itinerary — City Day Tour",
+      intro:"You have 45 seconds to read the tour itinerary. Then a tourist will ask you questions about it.",
+      table:[
+        ["sec","Saturday · One-Day City Tour",""],
+        ["8:00 AM","Hotel Pickup","Main Lobby"],
+        ["9:00 AM","City Museum Visit","2 hours"],
+        ["11:30 AM","Lunch at Harbor","Seafood"],
+        ["1:00 PM","Old Town Walking Tour","Guide: Tom"],
+        ["3:30 PM","Free Shopping Time","Market St."],
+        ["5:00 PM","Return to Hotel","Bus"]
+      ],
+      q:["What time is the hotel pickup, and where do we meet?",
+         "I heard lunch is at a restaurant downtown. Is that correct?",
+         "Can you give me all the details about the afternoon activities?"]
+    },
+    {
+      title:"Training Workshop Agenda — New Employees",
+      intro:"You have 45 seconds to read the agenda. Then a new employee will ask you questions.",
+      table:[
+        ["sec","Monday · Orientation Day",""],
+        ["9:00 AM","Welcome Speech","CEO"],
+        ["9:30 AM","Company Overview","Room 101"],
+        ["11:00 AM","Safety Training","Mr. Evans"],
+        ["12:00 PM","Lunch","Provided"],
+        ["1:30 PM","IT Setup","Help Desk"],
+        ["3:00 PM","Team Introductions","Each Dept."]
+      ],
+      q:["When does the orientation begin, and who gives the welcome speech?",
+         "I think the safety training is in the afternoon. Is that correct?",
+         "Could you tell me everything that happens after lunch?"]
+    }
+  ],
+
+  // Part 5: express an opinion
+  opinions: [
+    "Some people prefer to work for a large company, while others prefer to work for a small company. Which do you prefer, and why? Give specific reasons or examples to support your opinion.",
+    "Do you agree or disagree with the following statement? It is better to study alone than to study with a group of people. Give reasons or examples to support your opinion.",
+    "Some people think that students should use smartphones in the classroom for learning. Others believe smartphones should not be allowed. What is your opinion? Support your answer with reasons or examples.",
+    "Do you agree or disagree? Living in a big city is better than living in the countryside. Give specific reasons or examples to support your opinion.",
+    "Some people prefer to travel with a tour group, while others prefer to travel on their own. Which do you prefer, and why? Use specific reasons and details to support your answer.",
+    "Do you agree or disagree with the following statement? Companies should allow employees to work from home. Give reasons or examples to support your opinion.",
+    "Some people like to plan their activities in detail, while others prefer to be spontaneous. Which type of person are you? Explain with specific reasons and examples.",
+    "Do you think it is better to receive money or a gift for your birthday? Give specific reasons or examples to support your opinion.",
+    "Some people believe that children should start learning a foreign language at a very young age. Do you agree or disagree? Support your opinion with reasons or examples.",
+    "Do you agree or disagree? It is more important to have a job you enjoy than a job that pays well. Give reasons or examples to support your opinion."
+  ]
+};
+
+/* ---------- SVG scene generator for Part 2 ---------- */
+function sceneSVG(id){
+  const sky="#cfe8ff", ground="#dfeccf";
+  const head=(c)=>`<circle cx="0" cy="0" r="9" fill="#f1c9a5"/>`;
+  function person(x,y,color){return `<g transform="translate(${x},${y})"><circle cx="0" cy="0" r="9" fill="#f1c9a5"/><rect x="-10" y="10" width="20" height="26" rx="6" fill="${color}"/></g>`}
+  const scenes={
+    office:`<rect width="560" height="300" fill="#eef3f8"/><rect x="0" y="210" width="560" height="90" fill="#d7e0ea"/>
+      <ellipse cx="280" cy="220" rx="150" ry="28" fill="#b9c7d6"/>
+      <rect x="150" y="150" width="260" height="70" rx="10" fill="#9fb4c9"/>
+      ${person(180,150,'#2a9df4')}${person(250,150,'#1e9e6a')}${person(330,150,'#e0930a')}${person(390,150,'#d2403a')}
+      <rect x="240" y="175" width="40" height="26" rx="3" fill="#34495e"/><rect x="300" y="175" width="40" height="26" rx="3" fill="#34495e"/>
+      <rect x="40" y="40" width="120" height="80" rx="6" fill="#fff" stroke="#9fb4c9"/><line x1="55" y1="60" x2="145" y2="60" stroke="#cfd8e3"/><line x1="55" y1="80" x2="145" y2="80" stroke="#cfd8e3"/><line x1="55" y1="100" x2="120" y2="100" stroke="#cfd8e3"/>`,
+    park:`<rect width="560" height="300" fill="${sky}"/><rect x="0" y="200" width="560" height="100" fill="${ground}"/>
+      <circle cx="120" cy="120" r="50" fill="#7cb342"/><rect x="113" y="120" width="14" height="80" fill="#8d6e63"/>
+      <circle cx="430" cy="100" r="60" fill="#66a83a"/><rect x="423" y="100" width="14" height="100" fill="#8d6e63"/>
+      <circle cx="470" cy="55" r="28" fill="#ffe082"/>
+      <rect x="220" y="210" width="120" height="14" rx="3" fill="#a1887f"/><rect x="228" y="224" width="10" height="26" fill="#8d6e63"/><rect x="322" y="224" width="10" height="26" fill="#8d6e63"/>
+      ${person(160,170,'#2a9df4')}${person(300,150,'#d2403a')}
+      <ellipse cx="350" cy="245" rx="22" ry="10" fill="#8d6e63"/>`,
+    cafe:`<rect width="560" height="300" fill="#f3ece2"/><rect x="0" y="210" width="560" height="90" fill="#5d4037"/>
+      <rect x="120" y="150" width="320" height="60" fill="#795548"/><rect x="120" y="140" width="320" height="14" fill="#6d4c41"/>
+      ${person(200,90,'#1e9e6a')}${person(360,90,'#2a9df4')}
+      <rect x="180" y="40" width="200" height="70" rx="6" fill="#3e2723"/><text x="280" y="82" font-size="22" fill="#ffd966" text-anchor="middle" font-family="sans-serif">MENU</text>
+      <rect x="250" y="175" width="16" height="20" rx="2" fill="#fff"/><rect x="300" y="175" width="16" height="20" rx="2" fill="#fff"/>`,
+    street:`<rect width="560" height="300" fill="${sky}"/>
+      <rect x="20" y="40" width="100" height="180" fill="#90a4ae"/><rect x="140" y="70" width="90" height="150" fill="#b0bec5"/>
+      <rect x="330" y="50" width="100" height="170" fill="#78909c"/><rect x="450" y="80" width="90" height="140" fill="#b0bec5"/>
+      <rect x="0" y="220" width="560" height="80" fill="#546e7a"/><rect x="0" y="255" width="560" height="6" fill="#ffd966" stroke-dasharray="20"/>
+      <rect x="120" y="235" width="70" height="34" rx="6" fill="#d2403a"/><rect x="360" y="238" width="70" height="32" rx="6" fill="#2a9df4"/>
+      ${person(260,200,'#1e9e6a')}${person(290,205,'#e0930a')}`,
+    market:`<rect width="560" height="300" fill="#fbf3e0"/><rect x="0" y="220" width="560" height="80" fill="#cdbfa3"/>
+      <rect x="60" y="120" width="180" height="20" fill="#8d6e63"/><polygon points="60,120 240,120 220,90 80,90" fill="#e57373"/>
+      <rect x="320" y="120" width="180" height="20" fill="#8d6e63"/><polygon points="320,120 500,120 480,90 340,90" fill="#81c784"/>
+      <circle cx="90" cy="160" r="9" fill="#ff7043"/><circle cx="115" cy="160" r="9" fill="#ffa726"/><circle cx="140" cy="160" r="9" fill="#ffca28"/>
+      <circle cx="370" cy="160" r="9" fill="#66bb6a"/><circle cx="395" cy="160" r="9" fill="#9ccc65"/>
+      ${person(250,170,'#2a9df4')}${person(290,175,'#d2403a')}`,
+    classroom:`<rect width="560" height="300" fill="#eef3f8"/><rect x="0" y="220" width="560" height="80" fill="#cfd8dc"/>
+      <rect x="60" y="40" width="200" height="100" rx="6" fill="#33691e"/><line x1="80" y1="70" x2="240" y2="70" stroke="#aed581"/><line x1="80" y1="95" x2="200" y2="95" stroke="#aed581"/>
+      ${person(360,80,'#d2403a')}
+      ${person(140,180,'#2a9df4')}${person(220,180,'#1e9e6a')}${person(300,180,'#e0930a')}
+      <rect x="120" y="200" width="50" height="10" fill="#8d6e63"/><rect x="200" y="200" width="50" height="10" fill="#8d6e63"/><rect x="280" y="200" width="50" height="10" fill="#8d6e63"/>`
+  };
+  return `<svg class="scene" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="picture to describe">${scenes[id]||scenes.office}</svg>`;
+}
+
+/* Real photo for picture-description tasks.  The SAME image is guaranteed in the test
+   and in the review: the primary URL is fixed (no randomness), and once an image
+   actually loads we store its resolved URL on the answer and reuse it in the report.
+   Chain: fixed Unsplash photo -> deterministic Picsum photo -> inline SVG (offline). */
+function picURLs(it){
+  const u=it.pic.img+"?w=900&h=560&fit=crop&crop=entropy&auto=format&q=70";
+  const p="https://picsum.photos/id/"+it.pic.pcs+"/900/560";
+  return [u,p];
+}
+function pictureHTML(it){
+  const a=answers[it.n]||{};
+  const [u,p]=picURLs(it);
+  const start = a.picResolved || u;            // reuse the exact image shown during the test
+  const elId="picimg"+it.n;
+  return '<div class="picwrap">'+
+    '<img id="'+elId+'" class="scene photo" alt="Describe this picture in detail" '+
+      'data-q="'+it.n+'" data-svg="'+it.pic.id+'" data-u="'+u+'" data-p="'+p+'" data-step="0" '+
+      'src="'+start+'" referrerpolicy="no-referrer" '+
+      'onload="picOk(this)" onerror="picErr(this)">'+
+    '<span class="picloading" id="picnote'+it.n+'">📷 사진을 불러오는 중…</span>'+
+    '</div>';
+}
+function picOk(img){
+  const q=img.getAttribute("data-q"); const note=document.getElementById("picnote"+q);
+  if(note)note.style.display="none";
+  if(answers[q])answers[q].picResolved=img.currentSrc||img.src;   // remember exact image for the report
+}
+function picErr(img){
+  const step=img.getAttribute("data-step");
+  if(step==="0"){ img.setAttribute("data-step","1"); img.src=img.getAttribute("data-p"); }
+  else if(step==="1"){ img.setAttribute("data-step","2");
+    const wrap=img.parentNode;
+    if(wrap){ wrap.innerHTML=sceneSVG(img.getAttribute("data-svg"))+
+      '<span class="picloading">예비 이미지(오프라인)로 표시 중입니다.</span>'; }
+  }
+}
+
+/* ---------- 1. BUILD A TEST (random 11 questions) ---------- */
+/* seeded PRNG (mulberry32) so each TEST number gives a fixed, repeatable set */
+let RNG=Math.random;
+function mulberry32(seed){let a=seed>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function pick(arr,n){const c=[...arr];const o=[];while(n-->0&&c.length)o.push(c.splice(Math.floor(RNG()*c.length),1)[0]);return o;}
+function buildTest(seed){
+  RNG = (seed==null)?Math.random:mulberry32(seed*2654435761+12345);
+  const items=[];
+  const reads=pick(BANK.reading,2);
+  const pics=pick(BANK.pictures,2);
+  const resp=pick(BANK.respond,1)[0];
+  const info=pick(BANK.infoTasks,1)[0];
+  const op=pick(BANK.opinions,1)[0];
+  // Part 1
+  reads.forEach((t,i)=>items.push({part:1,type:"read",title:"Read the text aloud.",text:t,prep:45,resp:45,max:3}));
+  // Part 2
+  pics.forEach((p,i)=>items.push({part:2,type:"picture",title:"Describe the picture in as much detail as you can.",pic:p,prep:45,resp:30,max:3}));
+  // Part 3 (3 questions share scenario)
+  resp.q.forEach((q,i)=>items.push({part:3,type:"respond",title:"Respond to the question.",scenario:resp.scenario,topic:resp.topic,question:q,prep:3,resp:(i===2?30:15),max:3}));
+  // Part 4 (3 questions share table)
+  info.q.forEach((q,i)=>items.push({part:4,type:"info",title:"Respond using the information provided.",info:info,question:q,prep:(i===0?45:3),resp:(i===2?30:15),max:3,firstOfPart:(i===0)}));
+  // Part 5
+  items.push({part:5,type:"opinion",title:"Express an opinion about a specific topic.",question:op,prep:45,resp:60,max:5});
+  // assign numbers
+  items.forEach((it,idx)=>it.n=idx+1);
+  return items;
+}
+
+const PART_DIR = {
+  1:{name:"Part 1 · Read a Text Aloud",
+     en:"In this part, you will read a text aloud. You have 45 seconds to prepare. Then you will have 45 seconds to read the text aloud.",
+     ko:"화면의 지문을 소리 내어 읽습니다. 준비 45초 후 45초 동안 읽으세요. 발음·억양·강세가 평가됩니다."},
+  2:{name:"Part 2 · Describe a Picture",
+     en:"In this part, you will describe the picture on your screen in as much detail as you can. You have 45 seconds to prepare and 30 seconds to speak.",
+     ko:"화면의 사진을 최대한 자세히 묘사합니다. 준비 45초, 답변 30초. 사람·사물·위치·동작을 문장으로 설명하세요."},
+  3:{name:"Part 3 · Respond to Questions",
+     en:"In this part, you will answer three questions. There is no preparation time. Respond as soon as you hear the beep.",
+     ko:"세 개의 질문에 답합니다. 별도 준비시간 없이 질문 직후 바로 답하세요. (15·15·30초)"},
+  4:{name:"Part 4 · Respond Using Information",
+     en:"In this part, you will answer three questions based on the information provided. You have 45 seconds to read the information first.",
+     ko:"제공된 표 정보를 바탕으로 세 질문에 답합니다. 먼저 45초간 정보를 읽으세요. (답변 15·15·30초)"},
+  5:{name:"Part 5 · Express an Opinion",
+     en:"In this part, you will give your opinion about a specific topic. You have 45 seconds to prepare and 60 seconds to speak.",
+     ko:"주어진 주제에 대해 의견을 말합니다. 준비 45초, 답변 60초. [의견→이유2개→예시→마무리] 구조를 권장합니다."}
+};
+
+/* ---------- 2. STATE ---------- */
+let TEST=[], cur=0, micStream=null, recog=null, recogOK=false, selectedTestNum=1, sttEnabled=false, asrEngine="device";
+let mediaRec=null, chunks=[], phaseTimer=null, recordStartTs=0;
+const answers={}; // n -> {transcript, interim, audioURL, durationSec}
+
+/* ---------- 3. DOM helpers ---------- */
+const $=id=>document.getElementById(id);
+const show=id=>{["screen-home","screen-direction","screen-question","screen-scoring","screen-result"].forEach(s=>$(s).classList.add("hide"));$(id).classList.remove("hide");};
+function fmt(s){s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+
+/* ---------- 4. TTS (directions / questions) — natural neural voices ---------- */
+let lastSpeak="", VOICES=[], selectedVoice=null;
+
+/* Rank voices so the most human-sounding (cloud / neural) ones come first.
+   - Microsoft "... Online (Natural)"  → best on Edge
+   - Google US/UK English              → best on Chrome (server-based)
+   - Apple "Samantha / ...(Enhanced)"  → good on Safari/macOS  */
+function voiceScore(v){
+  const n=(v.name||"").toLowerCase(), l=(v.lang||"").toLowerCase();
+  let s=0;
+  if(/natural|neural/.test(n))           s+=100;   // MS neural voices
+  if(/online/.test(n))                   s+=60;
+  if(/google/.test(n))                   s+=55;    // Google US English (Chrome)
+  if(/\(enhanced\)|premium|siri/.test(n))s+=45;    // Apple enhanced
+  if(/aria|jenny|guy|emma|michelle|ava|samantha|sonia|libby/.test(n)) s+=20;
+  if(l==="en-us")                        s+=15;
+  else if(l.startsWith("en"))            s+=8;
+  if(/female/.test(n))                   s+=5;
+  if(v.localService)                     s-=12;    // local robotic voices ranked lower
+  return s;
+}
+function loadVoices(){
+  if(!("speechSynthesis"in window))return;
+  VOICES=window.speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+  VOICES.sort((a,b)=>voiceScore(b)-voiceScore(a));
+  // keep current selection if still valid, else pick the top-ranked
+  if(!selectedVoice||!VOICES.find(v=>v.voiceURI===selectedVoice.voiceURI))
+    selectedVoice=VOICES[0]||null;
+  populateVoicePicker();
+}
+function populateVoicePicker(){
+  const sel=$("voiceSel"); if(!sel)return;
+  if(!VOICES.length){sel.innerHTML='<option>영어 음성을 찾는 중…</option>';return;}
+  sel.innerHTML="";
+  VOICES.forEach((v,i)=>{
+    const natural=/natural|neural|online|google|enhanced|premium/i.test(v.name);
+    const o=document.createElement("option");
+    o.value=v.voiceURI;
+    o.textContent=(natural?"⭐ ":"")+v.name+"  ("+v.lang+")"+(natural?" — 자연스러움":"");
+    if(selectedVoice&&v.voiceURI===selectedVoice.voiceURI)o.selected=true;
+    sel.appendChild(o);
+  });
+  const best=VOICES[0]&&/natural|neural|online|google|enhanced/i.test(VOICES[0].name);
+  $("voiceHint").textContent = best
+    ? "✓ 자연스러운 음성이 자동 선택되었습니다. 원하면 변경 후 미리듣기 하세요."
+    : "⚠ 이 브라우저엔 기본(기계식) 음성만 있습니다. 더 자연스러운 발음을 원하면 Microsoft Edge(무료, Natural 음성 내장)에서 열어보세요.";
+}
+
+function speak(text,opts={}){
+  return new Promise(res=>{
+    if(!("speechSynthesis"in window)){res();return;}
+    window.speechSynthesis.cancel();
+    lastSpeak=text;
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="en-US";
+    u.rate=opts.rate||0.92;          // slightly slower = more natural
+    u.pitch=opts.pitch||1.0;
+    if(selectedVoice)u.voice=selectedVoice;
+    u.onend=()=>res();u.onerror=()=>res();
+    window.speechSynthesis.speak(u);
+    setTimeout(res,Math.min(22000,Math.max(2500,text.length*95))); // safety
+  });
+}
+$("volBtn").onclick=()=>{if(lastSpeak)speak(lastSpeak);};
+
+/* ---------- 5. MIC + recognition ---------- */
+async function initMic(){
+  $("micStatus").className="micstatus wait";$("micStatus").textContent="마이크 권한 상태: 요청 중…";
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    $("micStatus").className="micstatus ok";
+    $("micStatus").textContent="✓ 마이크 권한 허용됨 — 시작할 수 있습니다.";
+    $("btnStart").disabled=false;$("startHint").textContent="준비 완료! 시작 버튼을 누르세요.";
+    // probe speech recognition
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(SR){recogOK=true;}
+    else{$("micStatus").textContent+=" (이 브라우저는 자동 음성인식 미지원 — 답변 후 직접 전사 입력 가능)";}
+    return true;
+  }catch(e){
+    $("micStatus").className="micstatus no";
+    $("micStatus").textContent="✗ 마이크 권한이 거부되었습니다. 브라우저 설정에서 허용 후 다시 시도하세요. ("+e.name+")";
+    return false;
+  }
+}
+$("btnMic").onclick=initMic;
+
+/* start recognition for current question */
+function startRecognition(n){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)return;
+  try{
+    recog=new SR();recog.lang="en-US";recog.continuous=true;recog.interimResults=true;
+    let finalText="";
+    recog.onresult=(e)=>{
+      let interim="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const tr=e.results[i][0].transcript;
+        if(e.results[i].isFinal)finalText+=tr+" ";else interim+=tr;
+      }
+      answers[n].transcript=finalText.trim();
+      answers[n].interim=interim;
+      if(answers[n].transcript)answers[n].asr="live";
+      $("liveText").textContent=(finalText+interim).trim()||"…";
+    };
+    recog.onerror=(ev)=>{ /* ignore no-speech etc */ };
+    recog.onend=()=>{ if(recogRunning){ try{recog.start();}catch(_){} } };
+    recogRunning=true;
+    recog.start();
+  }catch(e){}
+}
+let recogRunning=false;
+function stopRecognition(){recogRunning=false;if(recog){try{recog.stop();}catch(_){}}}
+
+/* MediaRecorder */
+function startRecording(n){
+  chunks=[];
+  answers[n].blobReady=new Promise(res=>{answers[n]._blobRes=res;});   // resolves when audio is flushed
+  try{
+    mediaRec=new MediaRecorder(micStream);
+    mediaRec.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+    mediaRec.onstop=()=>{
+      const blob=new Blob(chunks,{type:chunks[0]?chunks[0].type:"audio/webm"});
+      answers[n].audioBlob=blob;                       // keep raw audio for on-device transcription
+      answers[n].audioURL=URL.createObjectURL(blob);
+      if(answers[n]._blobRes){answers[n]._blobRes();answers[n]._blobRes=null;}
+    };
+    mediaRec.start();
+    recordStartTs=Date.now();
+  }catch(e){ if(answers[n]._blobRes){answers[n]._blobRes();answers[n]._blobRes=null;} }
+}
+function stopRecording(n){
+  if(mediaRec&&mediaRec.state!=="inactive"){try{mediaRec.stop();}catch(_){}}
+  answers[n].durationSec=(Date.now()-recordStartTs)/1000;
+}
+
+/* ---------- 6. FLOW ---------- */
+function startTest(){
+  TEST=buildTest(selectedTestNum);cur=0;
+  for(const it of TEST)answers[it.n]={transcript:"",interim:"",audioURL:null,durationSec:0};
+  buildProgress();
+  startGlobalClock();
+  gotoQuestion(0);
+}
+function buildProgress(){
+  const p=$("progress");p.innerHTML="";
+  TEST.forEach((_,i)=>{const s=document.createElement("div");s.className="seg";s.id="seg"+i;p.appendChild(s);});
+}
+function markProgress(){
+  TEST.forEach((_,i)=>{const s=$("seg"+i);if(!s)return;s.className="seg"+(i<cur?" done":i===cur?" cur":"");});
+}
+let globalRemain=20*60,globalIv=null;
+function startGlobalClock(){globalRemain=20*60;clearInterval(globalIv);globalIv=setInterval(()=>{globalRemain--;$("globalClock").textContent=fmt(globalRemain);if(globalRemain<=0)clearInterval(globalIv);},1000);}
+
+function gotoQuestion(idx){
+  cur=idx;markProgress();
+  const it=TEST[idx];
+  $("qmeta").textContent="TEST "+String(selectedTestNum).padStart(2,"0")+" · Part "+it.part+" · 문항 "+it.n+" / 11";
+  // show direction screen when entering a new part
+  const prev=idx>0?TEST[idx-1].part:null;
+  if(it.part!==prev){ showDirection(it); }
+  else { renderQuestion(it); }
+}
+
+function showDirection(it){
+  show("screen-direction");
+  const d=PART_DIR[it.part];
+  $("dirPill").textContent="PART "+it.part;
+  $("dirTitle").textContent=d.name;
+  $("dirText").innerHTML=d.en+'<div class="ko">'+d.ko+'</div>';
+  $("dirCue").textContent="디렉션을 읽어드립니다…";
+  $("btnDirNext").disabled=true;
+  speak(d.en).then(()=>{$("dirCue").textContent="준비되면 '다음'을 누르세요.";$("btnDirNext").disabled=false;});
+}
+$("btnDirNext").onclick=()=>renderQuestion(TEST[cur]);
+
+function renderQuestion(it){
+  show("screen-question");markProgress();
+  $("qPill").textContent="PART "+it.part+" · Question "+it.n+" of 11";
+  $("qTitle").textContent=it.title;
+  $("liveBox").classList.add("hide");$("liveText").textContent="";
+  $("btnStopRec").classList.add("hide");
+  $("qNote").textContent="";
+  const c=$("qContent");c.innerHTML="";
+
+  if(it.type==="read"){
+    c.innerHTML='<div class="prompt-card reading">'+it.text+'</div>';
+  }else if(it.type==="picture"){
+    c.innerHTML=pictureHTML(it)+'<p class="sub center">위 사진을 영어로 묘사하세요.</p>';
+  }else if(it.type==="respond"){
+    c.innerHTML='<div class="directions"><b>Scenario.</b> '+it.scenario+'</div>'+
+      '<div class="qbox"><span class="qlabel">QUESTION '+it.n+'</span>'+it.question+'</div>';
+  }else if(it.type==="info"){
+    let t='<table class="infotable"><caption>'+it.info.title+'</caption>';
+    it.info.table.forEach(r=>{
+      if(r[0]==="sec")t+='<tr><td class="sec" colspan="3">'+r[1]+'</td></tr>';
+      else t+='<tr><th>'+r[0]+'</th><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';
+    });
+    t+='</table>';
+    c.innerHTML=t+'<div class="qbox"><span class="qlabel">QUESTION '+it.n+'</span>'+it.question+'</div>';
+  }else if(it.type==="opinion"){
+    c.innerHTML='<div class="prompt-card">'+it.question+'</div>';
+  }
+
+  // phase sequence
+  runPhases(it);
+}
+
+/* run prep -> (speak question) -> response.  jumpNext lets the Skip button abort the whole question. */
+let jumpNext=false;
+function setListening(){ $("phaseDot").className="dot"; $("phaseText").firstChild.textContent="질문 듣는 중 (Listen)"; $("phaseSmall").textContent=""; $("bigTimer").textContent="🔊"; $("liveBox").classList.add("hide"); }
+async function runPhases(it){
+  jumpNext=false;
+  const infoFirst = (it.type==="info" && it.firstOfPart);
+
+  // Part 4, first question: read the information table for 45s BEFORE the narrator asks the question
+  if(infoFirst){
+    await phaseCountdown("prep",it.prep,it);
+    if(jumpNext){ return finishQuestion(it); }
+  }
+
+  // narrator reads the question / instruction aloud (listening-based parts)
+  if(it.type==="respond"||it.type==="info"||it.type==="opinion"||it.type==="picture"){
+    setListening();
+    if(it.type==="opinion")await speak(it.question);
+    else if(it.type==="picture")await speak("Now, describe the picture in as much detail as you can.");
+    else await speak(it.question);
+  }
+  if(jumpNext){ return finishQuestion(it); }
+
+  // preparation (skipped for info-first since it was the 45s reading already)
+  if(!infoFirst){
+    await phaseCountdown("prep",it.prep,it);
+    if(jumpNext){ return finishQuestion(it); }
+  }
+
+  // response (record)
+  await phaseCountdown("resp",it.resp,it);
+  finishQuestion(it);
+}
+
+/* fully skip the current question and move to the next one (works in any phase) */
+function skipQuestion(){
+  jumpNext=true;
+  clearInterval(phaseTimer);
+  try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(_){}
+  stopRecognition();
+  if(mediaRec&&mediaRec.state!=="inactive"){try{mediaRec.stop();}catch(_){}}
+  if(phaseResolve)phaseResolve();   // resolve whatever phase is awaiting
+}
+
+function phaseCountdown(kind,secs,it){
+  return new Promise(resolve=>{
+    const dot=$("phaseDot"),ptext=$("phaseText").firstChild,small=$("phaseSmall"),
+          big=$("bigTimer"),fill=$("progFill"),bar=$("progBar");
+    let remain=secs,total=secs;
+    if(kind==="prep"){
+      dot.className="dot prep";
+      ptext.textContent= (it.type==="info"&&it.firstOfPart)?"정보 읽는 중 (Reading)":"준비 시간 (Prepare)";
+      small.textContent="";bar.className="bar";$("btnStopRec").classList.add("hide");
+      $("liveBox").classList.add("hide");
+      $("qNote").textContent= (it.type==="read")?"지문을 눈으로 읽으며 준비하세요.":
+        (it.type==="picture")?"무엇을 어떤 순서로 말할지 떠올리세요.":
+        (it.type==="opinion")?"의견과 2가지 이유, 예시를 구상하세요.":"잠시 후 답변이 시작됩니다.";
+    }else{
+      dot.className="dot rec";ptext.textContent="답변 녹음 중 (Speaking)";bar.className="bar rec";
+      $("qNote").textContent="🔴 녹음 중입니다. 마이크에 대고 또렷하게 말하세요.";
+      $("liveBox").classList.remove("hide");
+      $("btnStopRec").classList.remove("hide");
+      startRecording(it.n);
+      if(asrEngine==="live"&&recogOK){ startRecognition(it.n); $("liveText").textContent="…"; }
+      else if(asrEngine==="device"){ $("liveText").textContent="🎙️ 녹음 중 — 답변이 저장되며, 시험 종료 후 브라우저 내 AI가 자동 전사하여 채점합니다."; }
+      else { $("liveText").textContent="🎙️ 녹음 중 — 자동 인식 끔. 시험 종료 후 결과 화면에서 답변을 입력하면 채점됩니다."; }
+      buzz("start");   // 답변 시작 부저음
+    }
+    big.textContent=fmt(remain).replace("00:","")||"0";big.classList.remove("warn");
+    function tick(){
+      small.textContent="· 남은 시간 "+remain+"초";
+      big.textContent=remain;
+      big.classList.toggle("warn",kind==="resp"&&remain<=5);
+      fill.style.width=(remain/total*100)+"%";
+      if(remain<=0){cleanup(true);return;}
+      remain--;
+    }
+    function cleanup(advance){
+      clearInterval(phaseTimer);
+      if(kind==="resp"){
+        stopRecognition();stopRecording(it.n);$("btnStopRec").classList.add("hide");
+        if(!jumpNext)buzz("end");   // 답변 종료 부저음 (건너뛰기 시에는 생략)
+      }
+      resolve();
+    }
+    tick();phaseTimer=setInterval(tick,1000);
+    // manual "finish answer" only ends the response phase (does NOT skip the question)
+    $("btnStopRec").onclick=()=>{ if(kind==="resp"){cleanup(true);} };
+    // store resolver to allow external stop / skip
+    phaseResolve=cleanup;
+  });
+}
+let phaseResolve=null;
+
+function finishQuestion(it){
+  if(cur+1<TEST.length){ gotoQuestion(cur+1); }
+  else { markProgress();TEST.forEach((_,i)=>$("seg"+i).className="seg done");runScoring(); }
+}
+
+/* buzzer tones using WebAudio.  'start' = single rising beep, 'end' = double descending buzz */
+let _actx=null;
+function buzz(kind){
+  try{
+    _actx=_actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(_actx.state==="suspended")_actx.resume();
+    const ctx=_actx;
+    const seq = kind==="end" ? [[740,0,.18],[560,0.20,.30]] : [[880,0,.28]];
+    seq.forEach(([f,t,d])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type="sine";o.frequency.value=f;o.connect(g);g.connect(ctx.destination);
+      const st=ctx.currentTime+t;
+      g.gain.setValueAtTime(.0001,st);
+      g.gain.exponentialRampToValueAtTime(.22,st+.02);
+      o.start(st);
+      g.gain.exponentialRampToValueAtTime(.0001,st+d);
+      o.stop(st+d+.03);
+    });
+  }catch(e){}
+}
+
+/* ---------- 7. SCORING ENGINE ---------- */
+const FILLERS=["um","uh","umm","uhh","er","erm","like","you know","kinda","sorta"];
+const CONNECTORS=["because","since","so","therefore","however","but","although","also","in addition","moreover","for example","for instance","first","second","finally","on the other hand","as a result","in conclusion","i think","in my opinion","i believe","i prefer"];
+
+function analyze(text,durationSec){
+  const clean=(text||"").trim();
+  const words=clean.length?clean.toLowerCase().replace(/[^a-z'\s]/g," ").split(/\s+/).filter(Boolean):[];
+  const wc=words.length;
+  const uniq=new Set(words).size;
+  const ttr=wc?uniq/wc:0;
+  const sentences=clean.split(/[.!?]+/).map(s=>s.trim()).filter(s=>s.length>1);
+  const dur=Math.max(1,durationSec||1);
+  const wpm=wc/(dur/60);
+  let fillers=0; const lc=" "+words.join(" ")+" ";
+  FILLERS.forEach(f=>{const re=new RegExp("\\b"+f.replace(/ /g,"\\s")+"\\b","g");fillers+=(lc.match(re)||[]).length;});
+  let connectors=0; CONNECTORS.forEach(c=>{ if(lc.includes(" "+c+" "))connectors++; });
+  return {clean,words,wc,uniq,ttr,sentences:sentences.length,wpm,fillers,connectors};
+}
+
+// helpers to compare reading accuracy
+function readingAccuracy(target,spoken){
+  const norm=s=>s.toLowerCase().replace(/[^a-z'\s]/g," ").split(/\s+/).filter(Boolean);
+  const T=norm(target),S=new Set(norm(spoken));
+  if(!T.length)return 0;
+  let hit=0;T.forEach(w=>{if(S.has(w))hit++;});
+  return hit/T.length;
+}
+
+/* map a 0..1 quality to an ETS-style rating label */
+function rate3(q){ return q>=0.75?{t:"상 (High)",c:"hi"} : q>=0.45?{t:"중 (Medium)",c:"mid"} : {t:"하 (Low)",c:"lo"}; }
+function clamp01(x){return Math.max(0,Math.min(1,x));}
+
+/* ETS rater dimensions:
+   - Delivery (전달력): pronunciation/fluency/pace/fillers — proxied by rate, fillers, length
+   - Language Use (언어 사용): grammar & vocabulary range/accuracy — proxied by TTR, sentences
+   - Content/Task (과제 완성도): relevance & completeness — proxied by length vs. expected, key coverage
+   - Coherence (일관성·전개, Q11 only): connectors & structure                                          */
+function scoreItem(it){
+  const a=answers[it.n]||{};
+  const an=analyze(a.transcript,a.durationSec);
+  let raw=0,max=it.max;
+  const fb={good:[],fix:[],metrics:[],dims:[],read:null};
+  const m=fb.metrics;
+  m.push(["단어 수",an.wc+"개"]);
+  m.push(["말하기 속도",Math.round(an.wpm)+" wpm"]);
+  m.push(["어휘 다양성",(an.ttr*100).toFixed(0)+"%"]);
+  m.push(["군더더기어",an.fillers+"회"]);
+
+  const noVoice = an.wc===0;
+  const inBand = an.wpm>=100&&an.wpm<=160;       // natural speaking rate band
+
+  if(it.type==="read"){
+    const acc=readingAccuracy(it.text,a.transcript);
+    const targetWords=it.text.split(/\s+/).length;
+    const completeness=clamp01(an.wc/Math.max(1,targetWords*0.85));
+    m.push(["원문 일치도",(acc*100).toFixed(0)+"%"]);
+    // sub-skill proxies (fed into the official-style Read-Aloud feedback)
+    const pron = clamp01(acc*0.85 + completeness*0.15);
+    const speedQ = an.wpm===0?0:(inBand?1:(an.wpm<100?clamp01(an.wpm/100):clamp01(190/an.wpm)));
+    const inton = clamp01(speedQ*0.6 + completeness*0.4);
+    fb.read={pron,inton};
+    const q=(pron*0.6+inton*0.4);
+    raw = q>=0.85?3 : q>=0.6?2.5 : q>=0.4?2 : q>=0.2?1 : (an.wc?0.5:0);
+    fb.dims.push(["발음 (Pronunciation)",rate3(pron), acc>=0.8?"원문 단어를 정확히 발화했습니다.":"누락·오인식 단어가 있어 명료도가 떨어집니다. 한 단어씩 또박또박 읽으세요."]);
+    fb.dims.push(["억양·강세 (Intonation & Stress)",rate3(inton), inBand?"자연스러운 속도로 리듬을 살렸습니다.":(an.wpm&&an.wpm<100?"속도가 느립니다. 110~140 wpm을 목표로 하세요.":"속도가 빠릅니다. 쉼표·마침표에서 끊어 읽으세요.")]);
+    if(acc>=0.85)fb.good.push("지문 대부분을 정확하게 읽었습니다.");
+    if(inBand)fb.good.push("읽기 속도가 자연스럽습니다.");
+    if(acc<0.85)fb.fix.push("쉼표·마침표에서 끊어 읽고, 내용어(명사·동사)에 강세를 주세요.");
+    if(an.wpm&&!inBand)fb.fix.push("속도를 110~140 wpm로 조절하면 억양·강세 점수가 올라갑니다.");
+    fb.summary="낭독은 ‘발음’과 ‘억양·강세(intonation & stress)’ 두 축으로 평가됩니다. 명료도와 자연스러운 끊어 읽기가 핵심입니다.";
+  }
+  else if(it.type==="picture"){
+    const keyHit=it.pic.key.filter(k=>an.clean.toLowerCase().includes(k)).length;
+    m.push(["핵심 요소 언급",keyHit+"/"+it.pic.key.length]);
+    const delivery=clamp01((inBand?0.6:0.35)+(an.fillers<=2?0.3:0.1)+(an.wc>=25?0.1:0));
+    const language=clamp01(an.ttr*0.7 + Math.min(1,an.sentences/4)*0.3);
+    const content =clamp01(Math.min(1,an.wc/45)*0.6 + Math.min(1,keyHit/4)*0.4);
+    fb.dims.push(["전달력 (Delivery)",rate3(delivery),"발음·유창성·속도. 끊김 없이 또렷하게 이어 말하세요."]);
+    fb.dims.push(["언어 사용 (Language Use)",rate3(language),"문법·어휘 다양성. 현재진행형(is V-ing)과 위치 전치사를 활용하세요."]);
+    fb.dims.push(["과제 완성도 (Content)",rate3(content), keyHit>=3?"핵심 요소를 잘 포착했습니다.":"사람 수→행동→사물→배경 순으로 더 많은 요소를 묘사하세요."]);
+    raw=Math.min(3, delivery*1.0+language*1.0+content*1.0);
+    if(an.wc>=30)fb.good.push("적절한 분량으로 사진을 묘사했습니다.");
+    if(keyHit>=3)fb.good.push("사람·사물·위치 등 핵심 요소를 잘 언급했습니다.");
+    if(an.wc<25)fb.fix.push("묘사 분량이 부족합니다. ‘There is/are…’, 위치 전치사(on the left, in the middle)로 5문장 이상 채우세요.");
+    if(an.ttr<0.55)fb.fix.push("같은 단어 반복을 줄이고 표현을 다양화하세요.");
+    fb.summary="사진 묘사는 전달력·언어사용·내용완성도로 평가됩니다. ①전체 인상 →②중심 인물/행동 →③위치·배경 순서를 권장합니다.";
+  }
+  else if(it.type==="respond"||it.type==="info"){
+    const isInfo=it.type==="info";
+    const expect=it.resp>=30?(isInfo?55:60):(isInfo?25:30);
+    const delivery=clamp01((inBand?0.55:0.3)+(an.fillers<=2?0.3:0.1)+(an.wc>=expect*0.6?0.15:0));
+    const language=clamp01(an.ttr*0.6 + Math.min(1,an.sentences/(it.resp>=30?3:1))*0.4);
+    let content;
+    if(isInfo){
+      const tableText=it.info.table.flat().join(" ").toLowerCase();
+      const tw=an.words.filter(w=>w.length>2&&tableText.includes(w)).length;
+      m.push(["표 정보 활용",tw+" 단어"]);
+      content=clamp01(Math.min(1,an.wc/expect)*0.5 + Math.min(1,tw/2)*0.5);
+      if(tw>=2)fb.good.push("표의 시간·장소·이름 정보를 답변에 반영했습니다.");
+      if(tw<1)fb.fix.push("표의 구체 정보(시간·장소·담당자)를 직접 인용해 답하세요. 정확성이 핵심입니다.");
+    }else{
+      content=clamp01(Math.min(1,an.wc/expect)*0.6 + (an.connectors>=1?0.4:0.15));
+      if(an.connectors>=1)fb.good.push("이유·연결어로 답변을 구체화했습니다.");
+      if(an.connectors<1)fb.fix.push("‘because, so, for example’ 같은 연결어로 이유를 덧붙이세요.");
+    }
+    fb.dims.push(["전달력 (Delivery)",rate3(delivery),"즉답성·유창성. 질문 직후 망설임 없이 말하세요."]);
+    fb.dims.push(["언어 사용 (Language Use)",rate3(language),"완전한 문장으로 문법·어휘를 정확히 사용하세요."]);
+    fb.dims.push(["과제 완성도 (Content)",rate3(content), isInfo?"질문이 요구하는 표 정보를 빠짐없이 전달하세요.":"질문에 직접 답한 뒤 이유·예시로 보완하세요."]);
+    raw=Math.min(3, delivery*1.0+language*1.0+content*1.0);
+    if(an.wc>=expect)fb.good.push("시간 대비 충분한 분량으로 답했습니다.");
+    if(an.wc<expect*0.6)fb.fix.push("답변이 짧습니다. "+(it.resp>=30?"마지막 질문은 ‘답+이유 2개+예시’로 길게":"즉답+이유 한 문장으로")+" 시간을 채우세요.");
+    if(an.fillers>3)fb.fix.push("군더더기어(um, uh)가 많습니다. 짧게 멈추는 연습으로 줄이세요.");
+    fb.summary= isInfo? "제공된 정보 기반 응답은 ‘정확성’이 핵심입니다. 8·9번은 한두 문장, 10번은 항목 전체를 나열하세요."
+      : "질문 응답은 즉답성과 내용 관련성이 핵심입니다. 5·6번은 짧게, 7번은 길게 답하세요.";
+  }
+  else if(it.type==="opinion"){
+    const expect=110;
+    const hasOpinion=/\b(i think|i believe|in my opinion|i prefer|i agree|i disagree|i would)\b/.test(an.clean.toLowerCase());
+    const delivery=clamp01((inBand?0.55:0.3)+(an.fillers<=3?0.3:0.1)+(an.wc>=80?0.15:0));
+    const language=clamp01(an.ttr*0.6 + Math.min(1,an.sentences/5)*0.4);
+    const content =clamp01((hasOpinion?0.3:0)+Math.min(1,an.wc/expect)*0.4+Math.min(1,an.connectors/3)*0.3);
+    const coherence=clamp01((hasOpinion?0.35:0)+Math.min(1,an.connectors/3)*0.45+Math.min(1,an.sentences/5)*0.2);
+    fb.dims.push(["전달력 (Delivery)",rate3(delivery),"60초 동안 끊김 없이 유창하게 말하세요."]);
+    fb.dims.push(["언어 사용 (Language Use)",rate3(language),"다양한 어휘와 복문(although, which 등)을 시도하세요."]);
+    fb.dims.push(["과제 완성도 (Content)",rate3(content), hasOpinion?"입장을 분명히 밝혔습니다.":"첫 문장에서 ‘I think…/I prefer…’로 입장을 명시하세요."]);
+    fb.dims.push(["일관성·전개 (Coherence)",rate3(coherence),"[입장→이유1+예시→이유2+예시→재진술] 구조와 연결어로 논리를 이으세요."]);
+    raw=Math.min(5, delivery*1.25+language*1.25+content*1.25+coherence*1.25);
+    m.push(["연결어 종류",an.connectors+"종"]); m.push(["문장 수",an.sentences+"문장"]);
+    if(hasOpinion)fb.good.push("의견을 분명히 밝히는 표현을 사용했습니다.");
+    if(an.connectors>=2)fb.good.push("이유·예시 연결어로 논리 구조를 만들었습니다.");
+    if(an.wc>=expect)fb.good.push("60초를 충분히 활용한 분량입니다.");
+    if(!hasOpinion)fb.fix.push("첫 문장에서 ‘I think… / I prefer…’로 입장을 명확히 밝히세요.");
+    if(an.connectors<2)fb.fix.push("이유를 ‘First…, Second…’, 예시를 ‘For example…’으로 구조화하세요.");
+    if(an.wc<80)fb.fix.push("분량이 부족합니다. 4단 구조로 60초를 채우세요.");
+    fb.summary="11번은 0–5점 고배점 문항으로 ‘일관성·전개(coherence)’가 추가 평가됩니다. 명확한 입장 + 이유 2개 + 예시 + 마무리가 핵심입니다.";
+  }
+
+  raw=Math.round(raw*2)/2; // half-point steps
+  if(noVoice){
+    raw=0; fb.dims.forEach(d=>{d[1]={t:"하 (Low)",c:"lo"};});
+    if(fb.read)fb.read={pron:0,inton:0};
+    fb.fix.unshift("인식된 답변 텍스트가 없습니다. 결과 화면의 ‘답변 전사’ 칸에 직접 입력하거나, 실시간 인식을 켜고 다시 응시하면 정확히 채점됩니다.");
+  }
+  return {raw,max,an,fb};
+}
+
+// 8 proficiency levels (scale-score bands per ETS).  Descriptors paraphrased.
+const LEVELS=[
+  {min:190,lv:8,grade:"Level 8",desc:"직장 상황에 적합한 연결되고 지속적인 담화를 만들어냅니다. 의견 제시·복잡한 응답이 매우 명료하며, 기본·복합 문법과 어휘 사용이 정확하고 정교합니다."},
+  {min:160,lv:7,grade:"Level 7",desc:"대부분의 과제를 효과적으로 수행합니다. 발음·머뭇거림·복합문 오류 등 사소한 약점이 있으나 의사 전달에 지장이 없습니다."},
+  {min:130,lv:6,grade:"Level 6",desc:"의견·정보를 관련성 있게 전달하지만, 발음·억양·문법·어휘 한계로 이유·설명이 때때로 불명확합니다. 기본 질의응답은 대체로 가능합니다."},
+  {min:110,lv:5,grade:"Level 5",desc:"의견 표현·복잡한 요청 처리에 제한이 있습니다. 부정확·모호·반복적 표현, 긴 멈춤, 아이디어 연결과 어휘의 부족이 나타납니다."},
+  {min:80, lv:4,grade:"Level 4",desc:"의견·복잡한 과제에서 대체로 한 문장 또는 단편적 응답에 그칩니다. 언어·어휘가 크게 제한되고 발음·강세 문제가 지속됩니다."},
+  {min:60, lv:3,grade:"Level 3",desc:"의견을 어렵게 말하지만 근거를 대지 못합니다. 단순 묘사에 필요한 어휘·문법이 부족하고, 낭독이 이해하기 어려울 수 있습니다."},
+  {min:40, lv:2,grade:"Level 2",desc:"의견 진술·뒷받침이 대체로 어렵고, 복잡한 요청에 무응답이거나 관련 없는 답을 합니다. 일상적 상호작용에서도 이해가 어렵습니다."},
+  {min:0,  lv:1,grade:"Level 1",desc:"상당 부분 무응답입니다. 지시·질문을 이해하는 듣기·읽기 능력이 부족할 수 있습니다. 기초부터 학습이 필요합니다."}
+];
+function cefrOf(score){ return score>=180?"C1":score>=160?"B2":score>=120?"B1":score>=90?"A2":score>=50?"A1":"A1 미만"; }
+
+function withTimeout(p,ms){ return Promise.race([Promise.resolve(p),new Promise(r=>setTimeout(r,ms))]); }
+async function runScoring(){
+  show("screen-scoring");clearInterval(globalIv);
+  const msg=$("scoringMsg"), fill=$("scoreFill");
+  fill.style.width="4%"; msg.textContent="녹음 저장을 마무리하는 중…";
+  // make sure every recording's blob has been flushed (esp. the last question) before transcribing
+  await Promise.all(TEST.map(it=>answers[it.n]&&answers[it.n].blobReady?withTimeout(answers[it.n].blobReady,3000):null).filter(Boolean));
+  // transcribe recorded audio ON-DEVICE (Whisper) so evaluation is based on the actual recording
+  const toDo = TEST.filter(it=>{const a=answers[it.n]; return a&&a.audioBlob&&!(a.transcript&&a.transcript.trim());});
+  if(asrEngine==="device" && window.ASR && window.ASR.supported && toDo.length){
+    try{
+      msg.textContent="① AI 음성인식 모델 로딩 중… (최초 1회, 인터넷 필요 · 수십 초 소요 가능)";
+      await window.ASR.load(p=>{ fill.style.width=(4+Math.max(0,Math.min(1,p))*26).toFixed(0)+"%"; });
+      for(let i=0;i<toDo.length;i++){
+        const it=toDo[i];
+        msg.textContent="② 녹음된 답변을 전사하는 중… ("+(i+1)+"/"+toDo.length+") — Q"+it.n;
+        try{
+          const txt=await window.ASR.transcribe(answers[it.n].audioBlob);
+          answers[it.n].transcript=(txt||"").trim(); answers[it.n].asr="device";
+        }catch(e){ answers[it.n].asr="error"; answers[it.n].asrError=String(e&&e.message||e); }
+        fill.style.width=(30+((i+1)/toDo.length)*66).toFixed(0)+"%";
+      }
+      msg.textContent="③ 채점 및 분석 중…";
+    }catch(e){
+      msg.textContent="자동 전사를 불러오지 못했습니다. 결과 화면에서 답변을 직접 입력하면 채점됩니다.";
+      TEST.forEach(it=>{if(answers[it.n]&&answers[it.n].audioBlob&&!answers[it.n].transcript)answers[it.n].asr="error";});
+    }
+  } else if(asrEngine==="live"){
+    msg.textContent="채점 및 분석 중… (실시간 인식 결과 사용)";
+  } else {
+    msg.textContent="채점 준비 중… (자동 인식 미사용 — 결과 화면에서 답변 입력 가능)";
+  }
+  fill.style.width="100%";
+  setTimeout(()=>{ buildResults(); }, 300);
+}
+
+function buildResults(){
+  const results=TEST.map(it=>({it,r:scoreItem(it)}));
+  let rawSum=0,maxSum=0;
+  results.forEach(x=>{rawSum+=x.r.raw;maxSum+=x.r.max;});
+  let scaled=Math.round((rawSum/maxSum)*20)*10;
+  scaled=Math.max(0,Math.min(200,scaled));
+  const L=LEVELS.find(l=>scaled>=l.min);
+  const cefr=cefrOf(scaled);
+
+  // ----- official-style score report header -----
+  $("resScore").textContent=scaled;
+  $("resLevel").textContent="Proficiency Level "+L.lv+" / 8";
+  $("resDesc").innerHTML="<b>TEST "+String(selectedTestNum).padStart(2,"0")+" · CEFR "+cefr+"</b><br>"+L.desc;
+  const g=$("resGauge");g.innerHTML="";for(let i=1;i<=8;i++){const d=document.createElement("div");d.className="g"+(i<=L.lv?" on":"");g.appendChild(d);}
+
+  // ----- Read-Aloud sub-skill ratings (Pronunciation / Intonation & Stress) -----
+  const reads=results.filter(x=>x.it.type==="read"&&x.r.fb.read);
+  const avg=k=>reads.length?reads.reduce((s,x)=>s+x.r.fb.read[k],0)/reads.length:0;
+  const pr=rate3(avg("pron")), it_=rate3(avg("inton"));
+  const bar=(rt)=>'<span class="lvlbar"><i class="'+(rt.c==="lo"||rt.c==="mid"||rt.c==="hi"?"on":"")+'"></i><i class="'+(rt.c==="mid"||rt.c==="hi"?"on":"")+'"></i><i class="'+(rt.c==="hi"?"on":"")+'"></i></span>';
+  const list=$("resList");list.innerHTML="";
+
+  const report=document.createElement("div");
+  report.className="reportcard";
+  report.innerHTML=
+    '<div class="rc-head">TOEIC&reg; Speaking — Score Report <span>(연습용 추정 / Practice Estimate)</span></div>'+
+    '<div class="rc-grid">'+
+      '<div class="rc-cell"><div class="rc-k">Total Score</div><div class="rc-v">'+scaled+'<small>/200</small></div></div>'+
+      '<div class="rc-cell"><div class="rc-k">Proficiency Level</div><div class="rc-v">'+L.lv+'<small>/8</small></div></div>'+
+      '<div class="rc-cell"><div class="rc-k">CEFR</div><div class="rc-v">'+cefr+'</div></div>'+
+    '</div>'+
+    '<div class="rc-desc">'+L.desc+'</div>'+
+    '<div class="rc-sub">'+
+      '<div class="rc-subt">Read-Aloud 항목별 피드백 (Q1–2 기반)</div>'+
+      '<div class="rc-subrow"><span>발음 (Pronunciation)</span>'+bar(pr)+'<b class="rt-'+pr.c+'">'+pr.t+'</b></div>'+
+      '<div class="rc-subrow"><span>억양·강세 (Intonation & Stress)</span>'+bar(it_)+'<b class="rt-'+it_.c+'">'+it_.t+'</b></div>'+
+    '</div>'+
+    '<div class="rc-note">※ 본 점수표는 ETS 공식 결과가 아니며, 브라우저 내 음성인식 전사를 바탕으로 한 학습용 추정치입니다. 발음·억양 등 음성 품질은 녹음을 직접 들으며 확인하세요.</div>';
+  list.appendChild(report);
+
+  // ----- per-question breakdown -----
+  results.forEach((x)=>{
+    const {it,r}=x;const a=answers[it.n]||{};
+    const pct=r.raw/r.max;
+    const col=pct>=0.8?"var(--green)":pct>=0.5?"var(--amber)":"var(--red)";
+    const block=document.createElement("div");block.className="resblock";
+    const partName={1:"지문 읽기",2:"사진 묘사",3:"질문 응답",4:"표 기반 응답",5:"의견 제시"}[it.part];
+    const metricChips=r.fb.metrics.map(mm=>'<span class="chip">'+mm[0]+' <b>'+mm[1]+'</b></span>').join("");
+    const dimRows=r.fb.dims.map(d=>'<div class="dimrow"><span class="dn">'+d[0]+'</span><b class="rt-'+d[1].c+'">'+d[1].t+'</b><span class="dnote">'+d[2]+'</span></div>').join("");
+    const goods=r.fb.good.length?'<ul>'+r.fb.good.map(t=>'<li class="good">✓ '+t+'</li>').join("")+'</ul>':'<p class="note">기록된 강점이 없습니다.</p>';
+    const fixes=r.fb.fix.length?'<ul>'+r.fb.fix.map(t=>'<li class="fix">▲ '+t+'</li>').join("")+'</ul>':'';
+    const targetBlock= it.type==="read" ? '<div class="tlabel">원문 (TARGET)</div><div class="transcript target">'+it.text+'</div>' :
+      (it.type==="opinion"||it.type==="respond"||it.type==="info") ? '<div class="tlabel">질문 (PROMPT)</div><div class="transcript target">'+(it.question||"")+'</div>' :
+      it.type==="picture" ? '<div class="tlabel">사진 (시험 때와 동일)</div>'+pictureHTML(it) : '';
+    const audio= a.audioURL? '<div class="audio-wrap"><div class="tlabel">내 녹음 (PLAYBACK)</div><audio controls preload="metadata" src="'+a.audioURL+'"></audio></div>':'<p class="note">녹음 파일이 없습니다.</p>';
+    const trVal=(a.transcript||"");
+    const hasRec=!!a.audioBlob||!!a.audioURL;
+    let asrStat;
+    if(a.asr==="device") asrStat='<span class="asrtag ok">🎙️→📝 온디바이스 AI 전사됨</span>';
+    else if(a.asr==="live") asrStat='<span class="asrtag ok">🎙️→📝 실시간 인식됨</span>';
+    else if(a.asr==="manual") asrStat='<span class="asrtag ok">✍️ 직접 입력됨</span>';
+    else if(a.asr==="error") asrStat='<span class="asrtag warn">⚠ 자동 전사 실패 — 아래에 입력 후 재채점하세요</span>';
+    else if(hasRec&&!trVal) asrStat='<span class="asrtag warn">⚠ 인식 결과 없음 — 녹음은 저장됨. 아래에 입력 후 재채점하세요</span>';
+    else if(!hasRec) asrStat='<span class="asrtag warn">건너뜀/녹음 없음</span>';
+    else asrStat='<span class="asrtag ok">전사 완료</span>';
+    const editor='<div class="tlabel">내 답변 전사 (YOUR ANSWER) · 인식 상태 '+asrStat+'</div>'+
+      '<textarea class="tredit" id="tr'+it.n+'" placeholder="여기에 본인이 말한 내용을 입력/수정한 뒤 \'이 답변으로 재채점\'을 누르면 채점에 반영됩니다.">'+escapeHtml(trVal)+'</textarea>'+
+      '<div class="btnrow" style="margin-top:8px"><button class="btn ghost rescore" data-q="'+it.n+'">↻ 이 답변으로 재채점</button></div>';
+
+    block.innerHTML=
+      '<div class="rhead"><div class="lft">Q'+it.n+' · Part '+it.part+' '+partName+
+        '<small>'+it.title+'</small></div>'+
+        '<div class="sc"><span class="scorepill" style="background:'+col+'">'+r.raw+' / '+r.max+'</span></div></div>'+
+      '<div class="resbody collapsed">'+
+        '<div class="metricrow">'+metricChips+'</div>'+
+        targetBlock+
+        editor+
+        audio+
+        '<div class="tlabel">총평 (Overall)</div><div class="feedback">'+r.fb.summary+'</div>'+
+        '<div class="tlabel">평가 항목별 (Rating by Criteria)</div><div class="dimbox">'+dimRows+'</div>'+
+        '<div class="tlabel">잘한 점 (Strengths)</div><div class="feedback">'+goods+'</div>'+
+        (fixes?'<div class="tlabel">고칠 점·보완 (To Improve)</div><div class="feedback">'+fixes+'</div>':'')+
+      '</div>';
+    block.querySelector(".rhead").onclick=(e)=>{ if(e.target.closest(".resbody"))return; block.querySelector(".resbody").classList.toggle("collapsed"); };
+    list.appendChild(block);
+  });
+  // wire rescore buttons + transcript editing
+  list.querySelectorAll(".rescore").forEach(b=>{
+    b.onclick=()=>{ const q=+b.getAttribute("data-q"); const ta=$("tr"+q); if(answers[q]){answers[q].transcript=ta.value.trim(); answers[q].asr="manual"; if(!answers[q].durationSec)answers[q].durationSec=Math.max(8,ta.value.split(/\s+/).length/2);} buildResults(); window.scrollTo(0,0); };
+  });
+  // open the first question card
+  const firstBody=list.querySelectorAll(".resbody")[0];if(firstBody)firstBody.classList.remove("collapsed");
+
+  buildStudyGuide(results,scaled,L);
+  show("screen-result");
+}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));}
+
+function buildStudyGuide(results,scaled,L){
+  // aggregate weaknesses
+  const weak={short:0,connectors:0,fillers:0,info:0,read:0,opinion:0};
+  results.forEach(({it,r})=>{
+    if(r.an.wc< (it.type==="opinion"?80:20))weak.short++;
+    if((it.type==="respond"||it.type==="opinion")&&r.an.connectors<1)weak.connectors++;
+    if(r.an.fillers>3)weak.fillers++;
+    if(it.type==="info"&&r.raw<2)weak.info++;
+    if(it.type==="read"&&r.raw<2.5)weak.read++;
+    if(it.type==="opinion"&&r.raw<3)weak.opinion++;
+  });
+  let priorities=[];
+  if(weak.short>=2)priorities.push("<b>발화 분량 확장</b> — 답변이 전반적으로 짧습니다. 각 답을 '핵심+이유+예시' 최소 3문장으로 늘리는 훈련이 1순위입니다.");
+  if(weak.connectors>=1)priorities.push("<b>연결어·논리 구조</b> — because, for example, first/second, however 등을 의식적으로 넣어 답변을 구조화하세요.");
+  if(weak.fillers>=1)priorities.push("<b>군더더기어 줄이기</b> — um/uh 대신 0.5초 멈춤을 활용하세요. 답변 도입 템플릿을 외우면 효과적입니다.");
+  if(weak.info>=1)priorities.push("<b>Part 4 정확성</b> — 표의 시간·장소·이름을 정확히 읽고 완전한 문장으로 답하는 연습이 필요합니다.");
+  if(weak.read>=1)priorities.push("<b>Part 1 낭독</b> — 끊어 읽기(청크), 강세, 문장 끝 억양을 또박또박 연습하세요.");
+  if(weak.opinion>=1)priorities.push("<b>Part 11 의견</b> — 4단 구조 템플릿을 암기해 60초를 안정적으로 채우세요.");
+  if(!priorities.length)priorities.push("전반적으로 안정적입니다. 고급 어휘·자연스러운 억양·표현 다양성으로 상위 레벨을 노리세요.");
+
+  $("studyContent").innerHTML=
+    '<h4>① 진단 요약</h4><p>총점 <b>'+scaled+'/200 ('+L.grade+')</b>. 아래 우선순위 과제부터 보완하면 점수 상승이 가장 빠릅니다.</p>'+
+    '<h4>② 우선 보완 과제</h4><ul>'+priorities.map(p=>'<li>'+p+'</li>').join("")+'</ul>'+
+    '<h4>③ 파트별 핵심 전략</h4>'+
+    '<ul>'+
+      '<li><b>Part 1 (읽기):</b> 콤마·마침표에서 끊고, 내용어에 강세. 매일 지문 3개 낭독 녹음 → 원어민과 비교.</li>'+
+      '<li><b>Part 2 (사진):</b> 템플릿 "This is a picture of… / In the middle… / On the left… / They are -ing…". 위치 전치사+현재진행형.</li>'+
+      '<li><b>Part 3 (응답):</b> 즉답 후 이유 1개. 마지막(7번)은 답+이유 2개+예시로 30초를 채우기.</li>'+
+      '<li><b>Part 4 (표):</b> 45초 동안 시간/장소/담당자에 표시. "It is scheduled at __ in __." 정확성 최우선. 10번은 항목 전체 나열.</li>'+
+      '<li><b>Part 5 (의견):</b> [입장 → First 이유+예시 → Second 이유+예시 → 재진술]. 연결어와 분량(110+단어)이 점수를 좌우.</li>'+
+    '</ul>'+
+    '<h4>④ 4주 연습 플랜</h4>'+
+    '<ul>'+
+      '<li><b>1주차:</b> 파트별 템플릿 암기 + 매일 11문제 중 5문제 녹음.</li>'+
+      '<li><b>2주차:</b> Part 1·2 집중 — 낭독 억양/사진 묘사 5문장 안정화.</li>'+
+      '<li><b>3주차:</b> Part 3·4 집중 — 즉답 순발력, 표 정보 정확성.</li>'+
+      '<li><b>4주차:</b> Part 5 집중 + 매일 풀세트 모의고사 1회, 본인 녹음 셀프 피드백.</li>'+
+    '</ul>'+
+    '<h4>⑤ 추천 학습 습관</h4>'+
+    '<ul>'+
+      '<li>모든 답변을 <b>녹음 → 전사 → 다시 말하기(shadowing)</b> 3단계로 복습.</li>'+
+      '<li>실수한 문법/발음 단어를 따로 노트에 정리해 반복.</li>'+
+      '<li>YBM 공식 샘플·ETS 기출 유형으로 실전 감각 유지, 주 2회 풀세트 권장.</li>'+
+    '</ul>'+
+    '<p class="note">※ 본 가이드는 음성인식 전사 기반 추정 분석입니다. 발음·억양 등 음성 품질은 녹음 청취로 보완 판단하세요.</p>';
+}
+
+/* ---------- 8. NAV BUTTONS ---------- */
+$("btnStart").onclick=async()=>{
+  buzz("start");  // also unlocks the audio context on first user gesture
+  if(!micStream){ const ok=await initMic(); if(!ok)return; }   // request once, keep for whole session
+  startTest();
+};
+$("btnSkip").onclick=skipQuestion;   // dedicated per-question skip
+$("btnRetry").onclick=()=>{ resetAll();startTest(); };
+$("btnHome").onclick=()=>{ resetAll();show("screen-home"); $("qmeta").textContent="실전 모의테스트"; $("globalClock").textContent="20:00"; };
+function resetAll(){
+  clearInterval(phaseTimer);clearInterval(globalIv);stopRecognition();
+  if(mediaRec&&mediaRec.state!=="inactive"){try{mediaRec.stop();}catch(_){}}
+  window.speechSynthesis&&window.speechSynthesis.cancel();
+}
+
+// preload voices (voice list often loads async)
+if("speechSynthesis"in window){
+  window.speechSynthesis.onvoiceschanged=loadVoices;
+  loadVoices();
+  setTimeout(loadVoices,300); setTimeout(loadVoices,1200);
+}
+// voice picker handlers
+$("voiceSel").onchange=function(){
+  selectedVoice=VOICES.find(v=>v.voiceURI===this.value)||selectedVoice;
+};
+$("btnVoiceTest").onclick=()=>speak("Hello! This is how the test directions will sound. In this part, you will read a text aloud.");
+
+/* ---------- test selection grid (YBM-style) ---------- */
+function buildTestGrid(){
+  const g=$("testGrid"); if(!g)return; g.innerHTML="";
+  for(let i=1;i<=10;i++){
+    const b=document.createElement("button");
+    b.className="testbtn"+(i===selectedTestNum?" sel":"");
+    b.innerHTML='<div class="tn">TEST '+String(i).padStart(2,"0")+'</div><div class="tl">11문항 · ~20분</div>';
+    b.onclick=()=>{
+      selectedTestNum=i;
+      [...g.children].forEach((c,idx)=>c.classList.toggle("sel",idx+1===i));
+      $("testPick").innerHTML="선택된 회차: <b>TEST "+String(i).padStart(2,"0")+"</b>";
+    };
+    g.appendChild(b);
+  }
+}
+buildTestGrid();
+function applyEngine(v){
+  asrEngine=v; sttEnabled=(v==="live");
+  const hint=$("asrHint"); if(!hint)return;
+  if(v==="device") hint.innerHTML="✓ 가장 정확하고 비공개입니다. 녹음이 끝나면 채점 단계에서 브라우저 내 AI가 전사합니다. (Chrome/Edge 권장, 최신 iPhone 가능)";
+  else if(v==="live"){ const ok=!!(window.SpeechRecognition||window.webkitSpeechRecognition); hint.innerHTML= ok?"말하는 동안 실시간으로 받아 적습니다. 빠르지만 음성이 브라우저 제공사 서버로 전송될 수 있습니다.":"⚠ 이 브라우저는 실시간 인식을 지원하지 않습니다(예: iPhone Safari). ‘온디바이스 AI’를 권장합니다."; }
+  else hint.innerHTML="자동 인식을 쓰지 않습니다. 녹음만 저장되며, 결과 화면의 ‘답변 전사’ 칸에 직접 입력하면 정확히 채점됩니다.";
+}
+const _eng=$("asrEngine"); if(_eng){ _eng.onchange=function(){ applyEngine(this.value); }; applyEngine(_eng.value); }
+show("screen-home");
+</script>
+</body>
+</html>
